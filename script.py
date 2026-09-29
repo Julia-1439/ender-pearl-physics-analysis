@@ -10,7 +10,6 @@ s_z0 = 0
 s_y0 = s_y0 + 1.62 - 0.1
 
 ### PARAM: Initial player velocity
-v_px = 0
 v_py = 0
 v_pz = 0
 
@@ -19,26 +18,27 @@ def v_0(axis:str, pitch:float) -> float:
     pitch = m.radians(pitch)
     return {
         "x": 0,
-        "y": -1.5 * m.sin(pitch),
-        "z": 1.5 * m.cos(pitch)
+        "y": v_py + -1.5 * m.sin(pitch),
+        "z": v_pz + 1.5 * m.cos(pitch)
     }[axis]
 
 ### Component-wise velocity function given a pitch and axis, initial pitch, and time. We keep yaw constant at 360 degrees
+### I don't think this is used anywhere
 def v(t:int, axis:str, pitch:float) -> float:
     pitch = m.radians(pitch)
     return {
         "x": 0, 
-        "y": v_0(axis, pitch)*0.99**m.floor(t) - 0.03*(100-100*0.99**m.floor(t)),
-        "z": v_0(axis, pitch)*0.99**m.floor(t)
+        "y": v_0("y", pitch)*0.99**m.floor(t) - 0.03*(100-100*0.99**m.floor(t)),
+        "z": v_0("z", pitch)*0.99**m.floor(t)
     }[axis]
 
-### Component-wise position function given a pitch and axis. We keep yaw constant at 360 degrees (hence, zeroing every sin(yaw)) 
+### Component-wise position function given a pitch and axis. We keep yaw constant at 360 degrees (hence, zeroing every sin(yaw))
 def s(t:int, axis:str, pitch:float) -> float:
-    pitch = m.radians(pitch)
+    # pitch = m.radians(pitch)
     return {
         "x": s_x0,
-        "y": s_y0 - 3*t - (1.5*m.sin(pitch) - 3) * (100 - 100*0.99**t),
-        "z": s_z0 + 1.5*m.cos(pitch) * (100 - 100*0.99**t)
+        "y": s_y0 + (v_0("y", pitch) + 3) * (100 - 100*0.99**t) - 3*t ,
+        "z": s_z0 + v_0("z", pitch) * (100 - 100*0.99**t)
     }[axis]
 
 ### Passed into root_scalar to find where the position function for y, ie s_y, intersects the even ground y=s_y0. This helper transforms the root found by root_scalar to be the solution to s_y = s_y0 (where s_y0 is adjusted for the 1.62 and -0.1 offsets applied its initialization). 
@@ -61,7 +61,7 @@ desired_angles = np.arange(-90, 90, 360/65536)
 for pitch in desired_angles:
     converted_pitch = convert_pitch(pitch)
     landing_times[converted_pitch] = compute_landing_time(converted_pitch)
-    landing_distances[pitch] = s(landing_times[pitch], "z", converted_pitch)
+    landing_distances[converted_pitch] = s(landing_times[converted_pitch], "z", converted_pitch)
 
 top_entries = dict(sorted(landing_distances.items(), key=lambda item: item[1], reverse=True)[:10])
 pprint(top_entries)
