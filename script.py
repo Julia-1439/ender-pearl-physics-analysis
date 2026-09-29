@@ -10,8 +10,8 @@ s_z0 = 0
 s_y0 = s_y0 + 1.62 - 0.1
 
 ### PARAM: Initial player velocity
-v_py = 0
-v_pz = 0
+v_py = 0.42
+v_pz = 0.2
 
 ### Component-wise initial velocity function given a pitch and axis. Yaw is kept constant to 360 degrees. 
 def v_0(axis:str, pitch:float) -> float:
@@ -20,16 +20,6 @@ def v_0(axis:str, pitch:float) -> float:
         "x": 0,
         "y": v_py + -1.5 * m.sin(pitch),
         "z": v_pz + 1.5 * m.cos(pitch)
-    }[axis]
-
-### Component-wise velocity function given a pitch and axis, initial pitch, and time. We keep yaw constant at 360 degrees
-### I don't think this is used anywhere
-def v(t:int, axis:str, pitch:float) -> float:
-    pitch = m.radians(pitch)
-    return {
-        "x": 0, 
-        "y": v_0("y", pitch)*0.99**m.floor(t) - 0.03*(100-100*0.99**m.floor(t)),
-        "z": v_0("z", pitch)*0.99**m.floor(t)
     }[axis]
 
 ### Component-wise position function given a pitch and axis. We keep yaw constant at 360 degrees (hence, zeroing every sin(yaw))
