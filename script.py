@@ -24,7 +24,6 @@ def v_0(axis:str, pitch:float) -> float:
 
 ### Component-wise position function given a pitch and axis. We keep yaw constant at 360 degrees (hence, zeroing every sin(yaw))
 def s(t:int, axis:str, pitch:float) -> float:
-    # pitch = m.radians(pitch)
     return {
         "x": s_x0,
         "y": s_y0 + (v_0("y", pitch) + 3) * (100 - 100*0.99**t) - 3*t ,
